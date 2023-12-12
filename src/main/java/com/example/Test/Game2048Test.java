@@ -77,7 +77,11 @@ public class Game2048Test {
 
         if (!game.canMove()) throw new RuntimeException("canMove not work =(");
 
-        game.addItem();
+        try {
+            game.addItem();
+        } catch (NotEnoughSpaceException e) {
+            throw new RuntimeException(e);
+        }
 
         if (b.availableSpace().size() != 13) throw new RuntimeException("addItem must be add 1 item");
 

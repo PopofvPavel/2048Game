@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class SquareBoard<V> extends Board<Key,V> {
+public class SquareBoard<V> extends Board<Key, V> {
 
 
     public SquareBoard(int size) {
@@ -15,6 +15,10 @@ public class SquareBoard<V> extends Board<Key,V> {
 
     @Override
     public void fillBoard(List<V> list) {
+        if (list.size() > this.getHeight() * this.getWidth()) {
+            throw new RuntimeException("Initialization error: list has got more elements than board can fill");
+        }
+
         Iterator<V> iterator = list.iterator();
         for (int i = 0; i < this.getHeight(); i++) {
             for (int j = 0; j < this.getWidth(); j++) {

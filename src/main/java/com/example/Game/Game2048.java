@@ -2,6 +2,7 @@ package com.example.Game;
 
 import com.example.Board.Board;
 import com.example.Board.Key;
+import com.example.Board.NotEnoughSpaceException;
 import com.example.Board.SquareBoard;
 
 import java.util.ArrayList;
@@ -34,7 +35,28 @@ public class Game2048 implements Game {
 
     @Override
     public boolean canMove() {
-        return !board.availableSpace().isEmpty();
+        // Если есть свободное место, то ход возможен
+        if (!board.availableSpace().isEmpty()) {
+            return true;
+        }
+
+        //Проверяем значения, есть ли у них одинаковые соседи
+        for (int i = 0; i < board.getHeight(); i++) {
+            for (int j = 0; j < board.getWidth(); j++) {
+                Integer currentVal = board.getValue(new Key(i, j));
+                //Если справа такое же значение, то можно еще ходить
+                if (j != board.getWidth() - 1 && currentVal.equals(board.getValue(new Key(i, j + 1)))) {
+                    return true;
+                }
+                //Если внизу такое же значение, то можно еще ходить
+                if (i < board.getHeight() - 1 && currentVal.equals(board.getValue(new Key(i + 1, j)))) {
+                    return true;
+                }
+            }
+
+        }
+        //Если нет пустых мест и одинаковых ячеек рядом, но ходить больше нельзя
+        return false;
     }
 
     @Override
@@ -54,54 +76,53 @@ public class Game2048 implements Game {
                 break;
             case RIGHT:
                 for (int i = 0; i < board.getHeight(); i++) {
-                    List<Integer> list = helper.moveAndMergeEqual(board.getValues(board.getRow(i)));
-                    Collections.reverse(list);//как я понял при свайпе вправо здесь происзодит реверс
+                    List<Integer> list = helper.moveAndMergeEqual(board.getValues(board.getRow(i)),false);
+                    //Collections.reverse(list);
                     newBoardValues.addAll(list);
                 }
                 board.fillBoard(newBoardValues);
                 break;
             case UP:
-                //List<Integer> resultList = new ArrayList<>(GAME_SIZE * GAME_SIZE);
+
                 for (int i = 0; i < board.getWidth(); i++) {
                     List<Integer> list = helper.moveAndMergeEqual(board.getValues(board.getColumn(i)));
                     fillResultListByColumn(newBoardValues, list, i);
 
 
-                    //добавить в список (столбцов)
-                    //newBoardValues.add(getStraightenedList)
+
                 }
-                //по-хорошему здесь должен быть метод fillBoard, только заполняющий не построчно, а
-                // по столбцам
+
                 board.fillBoard(newBoardValues);
                 break;
             case DOWN:
-                //List<Integer> resultList = new ArrayList<>(GAME_SIZE * GAME_SIZE);
+
                 for (int i = 0; i < board.getWidth(); i++) {
-                    List<Integer> list = helper.moveAndMergeEqual(board.getValues(board.getColumn(i)),false);
-                    //Collections.reverse(list);
+                    List<Integer> list = helper.moveAndMergeEqual(board.getValues(board.getColumn(i)), false);
                     fillResultListByColumn(newBoardValues, list, i);
                     //добавить в список (столбцов)
                 }
-                //по-хорошему здесь должен быть метод fillBoard, только заполняющий не построчно, а
-                // по столбцам
+
                 board.fillBoard(newBoardValues);
                 break;
-          /*  default:
-                if (!board.availableSpace().isEmpty()) {
-                    addItem();
-                }*/
+
         }
 
         if (!board.availableSpace().isEmpty()) {
-            addItem();
+            try {
+                addItem();
+            } catch (NotEnoughSpaceException e) {
+                throw new RuntimeException(e);
+            }
         }
-        //board.fillBoard(newBoardValues);//перезаполнение поля
+
         return true;
     }
 
     private static void fillResultListByColumn(List<Integer> resultList, List<Integer> list, int j) {
-        for (int i = 0; i < GAME_SIZE * GAME_SIZE; i++) {
-            resultList.add(null);
+        if (resultList.isEmpty()) {
+            for (int i = 0; i < GAME_SIZE * GAME_SIZE; i++) {
+                resultList.add(null);
+            }
         }
 
         int itemIndexInList = 0;
@@ -109,16 +130,17 @@ public class Game2048 implements Game {
             resultList.set(itemIndexInList * GAME_SIZE + j, item);
             itemIndexInList++;
         }
-      /*  while (GAME_SIZE - itemIndexInList != 0) {
-            resultList.set(itemIndexInList * GAME_SIZE, null);
-            itemIndexInList++;
-        }*/
+
     }
 
     @Override
-    public void addItem() {
-        List<Key> emptyKeys = board.availableSpace();
-        Key key = emptyKeys.get(random.nextInt(emptyKeys.size()));
+    public void addItem() throws NotEnoughSpaceException {
+        List<Key> emptyKeysList = board.availableSpace();
+        if (emptyKeysList.isEmpty()) {
+            throw new NotEnoughSpaceException();
+        }
+
+        Key key = emptyKeysList.get(random.nextInt(emptyKeysList.size()));
         board.addItem(key, getRandomValue());
 
     }

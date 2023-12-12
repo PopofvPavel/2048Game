@@ -6,9 +6,10 @@ import org.junit.Test;
 
 import java.util.List;
 
+import static com.example.Game.Game2048.GAME_SIZE;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
-
+import static org.junit.Assert.assertThrows;
 public class Game2048Test {
 
 
@@ -114,11 +115,24 @@ public class Game2048Test {
 
         if (!game.canMove()) throw new RuntimeException("canMove not work =(");
 
-        game.addItem();
+        try {
+            game.addItem();
+        } catch (NotEnoughSpaceException e) {
+            throw new RuntimeException(e);
+        }
 
         if (b.availableSpace().size() != 13) throw new RuntimeException("addItem must be add 1 item");
 
     }
 
+    @Test
+    public void init_exception() throws NotEnoughSpaceException {
+        var game = new Game2048();
+        game.init();
+        for (var i = 0; i < GAME_SIZE * GAME_SIZE - 2; i++) {
+            game.addItem();
+        }
+        assertThrows(NotEnoughSpaceException.class, game::addItem);
+    }
 
 }

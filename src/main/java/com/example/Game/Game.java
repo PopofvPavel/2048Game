@@ -1,6 +1,7 @@
 package com.example.Game;
 
 import com.example.Board.Board;
+import com.example.Board.NotEnoughSpaceException;
 
 public interface Game {
     void init();
@@ -9,7 +10,7 @@ public interface Game {
 
     boolean move(Direction direction);
 
-    void addItem();
+    void addItem() throws NotEnoughSpaceException;
 
     Board getGameBoard();
 
